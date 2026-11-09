@@ -1,3 +1,23 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-# Create your models here.
+class Bot(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Scenario(models.Model):
+    bot = models.OneToOneField(Bot, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    data = models.JSONField(default=dict)
+
+
+class Step(models.Model):
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    order = models.PositiveIntegerField(default=0)
+    prompt = models.TextField()
+    next_step = models.ForeignKey("self",on_delete=models.SET_NULL, null=True, blank=True)
