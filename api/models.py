@@ -21,3 +21,14 @@ class Step(models.Model):
     order = models.PositiveIntegerField(default=0)
     prompt = models.TextField()
     next_step = models.ForeignKey("self",on_delete=models.SET_NULL, null=True, blank=True)
+
+class Conversation(models.Model):
+    bot = models.ForeignKey(Bot, on_delete=models.CASCADE)
+    current_step = models.ForeignKey(
+        Step,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
