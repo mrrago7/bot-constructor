@@ -140,3 +140,168 @@ class BotChatTest(APITestCase):
 
         self.assertEqual(mock_gpt.call_count, 2)
         self.assertIn('Второй вопрос', mock_gpt.call_args[0][0])
+
+    def test_bot_list(self):
+        response = self.client.get('/api/bots/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(
+            response.data[0]['name'],
+            'Test Bot'
+        )
+
+    def test_bot_create(self):
+        response = self.client.post(
+            '/api/bots/',
+            {
+                'name': 'New Bot',
+                'description': 'New description',
+                'owner': self.user.id
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['name'], 'New Bot')
+
+    def test_bot_detail(self):
+        response = self.client.get(
+            f'/api/bots/{self.bot.id}/'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], 'Test Bot')
+
+    def test_bot_update(self):
+        response = self.client.put(
+            f'/api/bots/{self.bot.id}/',
+            {
+                'name': 'Updated Bot',
+                'description': 'Updated description',
+                'owner': self.user.id
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], 'Updated Bot')
+
+    def test_bot_delete(self):
+        response = self.client.delete(
+            f'/api/bots/{self.bot.id}/'
+        )
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(
+            Bot.objects.filter(id=self.bot.id).exists()
+        )
+
+    def test_scenario_list(self):
+        response = self.client.get('/api/scenarios/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(
+            response.data[0]['name'],
+            'Test Scenario'
+        )
+
+    def test_scenario_create(self):
+        new_bot = Bot.objects.create(
+            name='New Bot',
+            description='New description',
+            owner=self.user
+        )
+
+        response = self.client.post(
+            '/api/scenarios/',
+            {
+                'bot': new_bot.id,
+                'name': 'New Scenario',
+                'description': 'New description',
+                'data': {}
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['name'], 'New Scenario')
+    def test_scenario_detail(self):
+        response = self.client.get(
+            f'/api/scenarios/{self.scenario.id}/'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], 'Test Scenario')
+
+    def test_scenario_update(self):
+        response = self.client.put(
+            f'/api/scenarios/{self.scenario.id}/',
+            {
+                'bot': self.bot.id,
+                'name': 'Updated Scenario',
+                'description': 'Updated description',
+                'data': {}
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], 'Updated Scenario')
+
+    def test_scenario_delete(self):
+        response = self.client.delete(
+            f'/api/scenarios/{self.scenario.id}/'
+        )
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(
+            Scenario.objects.filter(id=self.scenario.id).exists()
+        )
+
+    def test_step_create(self):
+        response = self.client.post(
+            f'/api/scenarios/{self.scenario.id}/steps/',
+            {
+                'scenario': self.scenario.id,
+                'name': 'Second step',
+                'order': 2,
+                'prompt': 'Второй вопрос'
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['name'], 'Second step')
+    def test_step_list(self):
+        response = self.client.get(
+            f'/api/scenarios/{self.scenario.id}/steps/'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+    def test_step_update(self):
+        response = self.client.put(
+            f'/api/scenarios/{self.scenario.id}/steps/{self.step.id}/',
+            {
+                'scenario': self.scenario.id,
+                'name': 'Updated step',
+                'order': 1,
+                'prompt': 'Обновлённый вопрос'
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], 'Updated step')
+    def test_step_delete(self):
+        response = self.client.delete(
+            f'/api/scenarios/{self.scenario.id}/steps/{self.step.id}/'
+        )
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(
+            Step.objects.filter(id=self.step.id).exists()
+        )
