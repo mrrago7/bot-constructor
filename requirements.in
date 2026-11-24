@@ -3,3 +3,5 @@ djangorestframework
 openai
 python-dotenv
 pip-tools
+gunicorn
+psycopg[binary]
